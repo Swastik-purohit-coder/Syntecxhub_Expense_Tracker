@@ -10,7 +10,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://syntecxhub-expense-tracker-silk.vercel.app/",
+    origin: "https://syntecxhub-expense-tracker-silk.vercel.app",
     credentials: true,
   })
 );

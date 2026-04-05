@@ -12,7 +12,7 @@ router.get(
     failureRedirect: "/",
   }),
   (req, res) => {
-    res.redirect("http://localhost:3000/dashboard");
+    res.redirect("https://syntecxhub-expense-tracker-silk.vercel.app/dashboard");
   }
 );
 
