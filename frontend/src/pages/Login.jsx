@@ -1,6 +1,6 @@
 const Login = () => {
   const handleLogin = () => {
-    window.location.href = "http://localhost:5000/auth/google";
+    window.location.href = "https://syntecxhubexpensetracker-production.up.railway.app/auth/google";
   };
 
   return (

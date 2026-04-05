@@ -59,7 +59,7 @@ const Dashboard = () => {
   const handleConfirmLogout = async () => {
     try {
       setIsLoggingOut(true);
-      await fetch("http://localhost:5000/auth/logout", {
+      await fetch("https://syntecxhubexpensetracker-production.up.railway.app/auth/logout", {
         method: "GET",
         credentials: "include",
       });

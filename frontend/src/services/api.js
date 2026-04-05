@@ -1,4 +1,4 @@
-const API = "https://syntecxhubexpensetracker-production.up.railway.app/";
+const API = "https://syntecxhubexpensetracker-production.up.railway.app";
 
 // GET all expenses
 export const getExpenses = async () => {
