@@ -1,35 +1,33 @@
-const BASE_URL = "http://localhost:5000/api";
+const API = "https://syntecxhubexpensetracker-production.up.railway.app/";
 
 // GET all expenses
 export const getExpenses = async () => {
-  const res = await fetch(`${BASE_URL}/expenses`, {
+  const res = await fetch(`${API}/api/expenses`, {
     credentials: "include",
   });
   return res.json();
 };
 
 // ADD expense
-export const addExpense = async (data) => {
-  const res = await fetch(`${BASE_URL}/expenses/add`, {
+export const addExpense = (data) => {
+  return fetch(`${API}/api/expenses`, {
     method: "POST",
-    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
   });
-  return res.json();
 };
 
 export const deleteExpense = async (id) => {
-  await fetch(`${BASE_URL}/expenses/${id}`, {
+  await fetch(`${API}/api/expenses/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
 };
 
 export const getUser = async () => {
-  const res = await fetch("http://localhost:5000/auth/user", {
+  const res = await fetch(`${API}/auth/user`, {
     credentials: "include",
   });
   return res.json();
