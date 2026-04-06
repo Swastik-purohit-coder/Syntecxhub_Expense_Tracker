@@ -1,34 +1,50 @@
-const API = "https://syntecxhubexpensetracker-production.up.railway.app";
+const API =
+  process.env.REACT_APP_API_URL ||
+  "https://syntecxhubexpensetracker-production.up.railway.app";
 
-// GET all expenses
-export const getExpenses = async () => {
-  const res = await fetch(`${API}/api/expenses`, {
-    credentials: "include",
+const request = async (path, { method = "GET", body } = {}) => {
+  const headers = {};
+
+  if (body) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const res = await fetch(`${API}${path}`, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
   });
-  return res.json();
+
+  if (!res.ok) {
+    const message = await res.text();
+    throw new Error(message || `Request failed with status ${res.status}`);
+  }
+
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return res.json();
+  }
+
+  return res.text();
 };
 
-// ADD expense
+export const getExpenses = () => {
+  return request("/api/expenses");
+};
+
 export const addExpense = (data) => {
-  return fetch(`${API}/api/expenses`, {
+  return request("/api/expenses/add", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 
-export const deleteExpense = async (id) => {
-  await fetch(`${API}/api/expenses/${id}`, {
+export const deleteExpense = (id) => {
+  return request(`/api/expenses/${id}`, {
     method: "DELETE",
-    credentials: "include",
   });
 };
 
-export const getUser = async () => {
-  const res = await fetch(`${API}/auth/user`, {
-    credentials: "include",
-  });
-  return res.json();
+export const getUser = () => {
+  return request("/auth/user");
 };

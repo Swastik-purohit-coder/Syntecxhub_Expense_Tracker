@@ -50,13 +50,29 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS expenses (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id),
+  user_id VARCHAR(255) NOT NULL,
   title VARCHAR(255),
   amount NUMERIC,
   category VARCHAR(100),
   type VARCHAR(50),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_name = 'expenses'
+      AND column_name = 'user_id'
+      AND data_type IN ('smallint', 'integer', 'bigint')
+  ) THEN
+    ALTER TABLE expenses DROP CONSTRAINT IF EXISTS expenses_user_id_fkey;
+    ALTER TABLE expenses
+      ALTER COLUMN user_id TYPE VARCHAR(255)
+      USING user_id::text;
+  END IF;
+END $$;
 `)
   .then(() => console.log("Tables created ✅"))
   .catch((err) =>

@@ -1,37 +1,35 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { getExpenses, addExpense, deleteExpense, getUser } from "../services/api";
+import { getExpenses, addExpense, deleteExpense } from "../services/api";
 import ExpenseChart from "../components/ExpenseChart";
+
 const Dashboard = () => {
   const [expenses, setExpenses] = useState([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("expense");
   const [filterType, setFilterType] = useState("all");
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const category = "General";
   const titleRef = useRef(null);
 
+  const fetchExpenses = useCallback(async () => {
+    try {
+      const data = await getExpenses();
+      setExpenses(data);
+    } catch (error) {
+      console.error("Failed to fetch expenses:", error);
+      setExpenses([]);
+    }
+  }, []);
+
   useEffect(() => {
     fetchExpenses();
-  }, []);
+  }, [fetchExpenses]);
 
   useEffect(() => {
-    getUser().then((user) => {
-      if (!user) {
-        window.location.href = "/";
-      }
-    });
+    if (titleRef.current) {
+      titleRef.current.focus();
+    }
   }, []);
-
-  useEffect(() => {
-    titleRef.current.focus();
-  }, []);
-
-  const fetchExpenses = async () => {
-    const data = await getExpenses();
-    setExpenses(data);
-  };
 
   const handleAddExpense = useCallback(async () => {
     if (!title || !amount) return;
@@ -40,36 +38,26 @@ const Dashboard = () => {
       title,
       amount: Number(amount),
       category,
-      user_id: 1,
       type,
     });
 
     setTitle("");
     setAmount("");
-    titleRef.current.focus();
+
+    if (titleRef.current) {
+      titleRef.current.focus();
+    }
 
     fetchExpenses(); // refresh UI
-  }, [title, amount, category, type]);
+  }, [title, amount, category, type, fetchExpenses]);
 
-  const handleDelete = useCallback(async (id) => {
-    await deleteExpense(id);
-    fetchExpenses();
-  }, []);
-
-  const handleConfirmLogout = async () => {
-    try {
-      setIsLoggingOut(true);
-      await fetch("https://syntecxhubexpensetracker-production.up.railway.app/auth/logout", {
-        method: "GET",
-        credentials: "include",
-      });
-      window.location.href = "/";
-    } catch (error) {
-      console.error("Logout failed:", error);
-      setIsLoggingOut(false);
-      setShowLogoutModal(false);
-    }
-  };
+  const handleDelete = useCallback(
+    async (id) => {
+      await deleteExpense(id);
+      fetchExpenses();
+    },
+    [fetchExpenses]
+  );
 
   const totalIncome = useMemo(() => {
     return expenses
@@ -107,10 +95,10 @@ const Dashboard = () => {
           </div>
 
           <button
-            onClick={() => setShowLogoutModal(true)}
-            className="rounded-xl border border-rose-400/30 bg-rose-500/15 px-4 py-2 text-sm font-medium text-rose-200 shadow-lg shadow-rose-900/20 transition duration-200 hover:-translate-y-0.5 hover:bg-rose-500/30 hover:text-rose-100 active:scale-[0.98]"
+            onClick={fetchExpenses}
+            className="rounded-xl border border-cyan-400/30 bg-cyan-500/15 px-4 py-2 text-sm font-medium text-cyan-200 shadow-lg shadow-cyan-900/20 transition duration-200 hover:-translate-y-0.5 hover:bg-cyan-500/30 hover:text-cyan-100 active:scale-[0.98]"
           >
-            Logout
+            Refresh
           </button>
         </div>
 
@@ -260,51 +248,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${
-          showLogoutModal
-            ? "pointer-events-auto opacity-100"
-            : "pointer-events-none opacity-0"
-        }`}
-      >
-        <div
-          onClick={() => {
-            if (!isLoggingOut) {
-              setShowLogoutModal(false);
-            }
-          }}
-          className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
-        />
-
-        <div
-          className={`relative w-full max-w-md rounded-2xl border border-white/15 bg-slate-900/75 p-6 shadow-2xl shadow-slate-950/60 backdrop-blur-xl transition-all duration-300 ${
-            showLogoutModal
-              ? "scale-100 translate-y-0"
-              : "scale-95 translate-y-2"
-          }`}
-        >
-          <h3 className="text-xl font-semibold text-slate-100">Confirm Logout</h3>
-          <p className="mt-2 text-sm text-slate-300/90">Are you sure you want to log out?</p>
-
-          <div className="mt-6 flex items-center justify-end gap-3">
-            <button
-              onClick={() => setShowLogoutModal(false)}
-              disabled={isLoggingOut}
-              className="rounded-xl border border-white/15 bg-slate-800/70 px-4 py-2 text-sm font-medium text-slate-200 transition duration-200 hover:bg-slate-700/80 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Cancel
-            </button>
-
-            <button
-              onClick={handleConfirmLogout}
-              disabled={isLoggingOut}
-              className="rounded-xl border border-rose-400/30 bg-gradient-to-r from-rose-500 to-red-500 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-rose-900/30 transition duration-200 hover:-translate-y-0.5 hover:shadow-rose-500/30 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {isLoggingOut ? "Logging out..." : "Logout"}
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

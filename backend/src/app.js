@@ -1,9 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const session = require("express-session");
-const passport = require("./config/passport");
 const pool = require("./config/db"); // import db
+const authRoutes = require("./routes/authRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
 
 const app = express();
@@ -19,28 +18,14 @@ if (isProduction) {
 app.use(
   cors({
     origin: frontendUrl,
-    credentials: true,
+    credentials: false,
+    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json());
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    proxy: isProduction,
-    cookie: {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    },
-  })
-);
 
-app.use(passport.initialize());
-app.use(passport.session());
-app.use("/auth", require("./routes/authRoutes"));
+app.use("/auth", authRoutes);
 app.use("/api/expenses", expenseRoutes);
 
 // TEST DB CONNECTION
