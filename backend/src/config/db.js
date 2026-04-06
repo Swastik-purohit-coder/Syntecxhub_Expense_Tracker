@@ -1,7 +1,38 @@
 const { Pool } = require("pg");
 
+const buildConnectionString = () => {
+  const rawUrl = process.env.DATABASE_URL;
+
+  if (!rawUrl) {
+    return rawUrl;
+  }
+
+  try {
+    const parsed = new URL(rawUrl);
+
+    const forcedDbName = process.env.DB_NAME || process.env.PGDATABASE;
+    if (forcedDbName) {
+      parsed.pathname = `/${forcedDbName}`;
+      return parsed.toString();
+    }
+
+    // Guard against a common typo that causes Postgres error 3D000.
+    if (parsed.pathname === "/postgrescd") {
+      parsed.pathname = "/postgres";
+      console.warn(
+        "DATABASE_URL database name 'postgrescd' detected. Auto-correcting to 'postgres'."
+      );
+    }
+
+    return parsed.toString();
+  } catch (error) {
+    console.warn("Invalid DATABASE_URL format. Falling back to raw value.");
+    return rawUrl;
+  }
+};
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: buildConnectionString(),
   ssl: {
     rejectUnauthorized: false,
   },
@@ -28,4 +59,9 @@ CREATE TABLE IF NOT EXISTS expenses (
 );
 `)
   .then(() => console.log("Tables created ✅"))
-  .catch((err) => console.log("DB Error ❌", err));
+  .catch((err) =>
+    console.log("DB Error ❌", {
+      code: err.code,
+      message: err.message,
+    })
+  );
