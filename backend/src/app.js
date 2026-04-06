@@ -7,18 +7,32 @@ const expenseRoutes = require("./routes/expenseRoutes");
 
 const app = express();
 const isProduction = process.env.NODE_ENV === "production";
-const frontendUrl =
-  process.env.FRONTEND_URL ||
-  "https://syntecxhub-expense-tracker-silk.vercel.app";
+const normalizeOrigin = (value = "") => value.trim().replace(/\/+$/, "");
+
+const configuredFrontendOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URLS,
+]
+  .filter(Boolean)
+  .flatMap((value) => value.split(","))
+  .map(normalizeOrigin)
+  .filter(Boolean);
+
+const defaultFrontendOrigins = [
+  "https://syntecxhub-expense-tracker-silk.vercel.app",
+];
+
 const isLocalOrigin = (origin) =>
-  /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+  /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(normalizeOrigin(origin));
+
 const allowedOrigins = new Set([
-  frontendUrl,
+  ...defaultFrontendOrigins,
+  ...configuredFrontendOrigins,
   "http://localhost:3000",
   "http://localhost:3001",
   "http://127.0.0.1:3000",
   "http://127.0.0.1:3001",
-]);
+].map(normalizeOrigin));
 
 if (isProduction) {
   app.set("trust proxy", 1);
@@ -32,11 +46,14 @@ app.use(
         return callback(null, true);
       }
 
-      if (allowedOrigins.has(origin) || isLocalOrigin(origin)) {
+      const requestOrigin = normalizeOrigin(origin);
+
+      if (allowedOrigins.has(requestOrigin) || isLocalOrigin(requestOrigin)) {
         return callback(null, true);
       }
 
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
+      console.warn(`CORS blocked for origin: ${requestOrigin}`);
+      return callback(null, false);
     },
     credentials: false,
     methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
