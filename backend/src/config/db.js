@@ -43,6 +43,7 @@ const buildConnectionString = () => {
 const pool = new Pool({
   connectionString: buildConnectionString(),
   connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS || 10000),
+  family: Number(process.env.PG_FAMILY || 4),
   ssl: {
     rejectUnauthorized: false,
   },
