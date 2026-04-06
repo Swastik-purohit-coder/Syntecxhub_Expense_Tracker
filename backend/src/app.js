@@ -10,6 +10,15 @@ const isProduction = process.env.NODE_ENV === "production";
 const frontendUrl =
   process.env.FRONTEND_URL ||
   "https://syntecxhub-expense-tracker-silk.vercel.app";
+const isLocalOrigin = (origin) =>
+  /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+const allowedOrigins = new Set([
+  frontendUrl,
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
+]);
 
 if (isProduction) {
   app.set("trust proxy", 1);
@@ -17,7 +26,18 @@ if (isProduction) {
 
 app.use(
   cors({
-    origin: frontendUrl,
+    origin: (origin, callback) => {
+      // Allow non-browser requests or same-origin requests without Origin header.
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.has(origin) || isLocalOrigin(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: false,
     methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
