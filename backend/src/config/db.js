@@ -1,6 +1,21 @@
 const dns = require("dns");
 const { Pool } = require("pg");
 
+const forcedFamily = Number(process.env.PG_FAMILY || 4);
+
+const forcedLookup = (hostname, options, callback) => {
+  dns.lookup(
+    hostname,
+    {
+      family: forcedFamily,
+      all: false,
+      // Keep ordering deterministic when both records exist.
+      verbatim: false,
+    },
+    callback
+  );
+};
+
 // Some hosts (e.g. cloud runtimes) may resolve IPv6 first even when IPv6 egress is unavailable.
 // Prefer IPv4 to avoid ENETUNREACH against Postgres endpoints that publish both A and AAAA records.
 try {
@@ -43,7 +58,8 @@ const buildConnectionString = () => {
 const pool = new Pool({
   connectionString: buildConnectionString(),
   connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS || 10000),
-  family: Number(process.env.PG_FAMILY || 4),
+  family: forcedFamily,
+  lookup: forcedLookup,
   ssl: {
     rejectUnauthorized: false,
   },
