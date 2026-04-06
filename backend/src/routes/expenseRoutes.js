@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const auth = require("../middleware/authMiddleware");
 
 const {
 	addExpense,
@@ -8,8 +7,8 @@ const {
 	deleteExpense,
 } = require("../controllers/expenseController");
 
-router.post("/add", auth, addExpense);
-router.get("/", auth, getExpenses);
-router.delete("/:id", auth, deleteExpense);
+router.post("/add", addExpense);
+router.get("/", getExpenses);
+router.delete("/:id", deleteExpense);
 
 module.exports = router;

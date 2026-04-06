@@ -1,8 +1,11 @@
 const pool = require("../config/db");
 
+const resolveUserId = (req) =>
+  String((req.user && req.user.id) || process.env.GUEST_USER_ID || "1");
+
 const addExpense = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = resolveUserId(req);
     const { title, amount, category, type } = req.body;
 
     const result = await pool.query(
@@ -20,7 +23,7 @@ const addExpense = async (req, res) => {
 
 const getExpenses = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = resolveUserId(req);
     const result = await pool.query(
       "SELECT * FROM expenses WHERE user_id = $1 ORDER BY created_at DESC",
       [userId]
@@ -34,7 +37,7 @@ const getExpenses = async (req, res) => {
 
 const deleteExpense = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = resolveUserId(req);
     const { id } = req.params;
 
     await pool.query("DELETE FROM expenses WHERE id = $1 AND user_id = $2", [
