@@ -1,4 +1,13 @@
+const dns = require("dns");
 const { Pool } = require("pg");
+
+// Some hosts (e.g. cloud runtimes) may resolve IPv6 first even when IPv6 egress is unavailable.
+// Prefer IPv4 to avoid ENETUNREACH against Postgres endpoints that publish both A and AAAA records.
+try {
+  dns.setDefaultResultOrder(process.env.DNS_RESULT_ORDER || "ipv4first");
+} catch (err) {
+  console.warn("Unable to set DNS result order:", err.message);
+}
 
 const buildConnectionString = () => {
   const rawUrl = process.env.DATABASE_URL;
@@ -33,6 +42,7 @@ const buildConnectionString = () => {
 
 const pool = new Pool({
   connectionString: buildConnectionString(),
+  connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS || 10000),
   ssl: {
     rejectUnauthorized: false,
   },
