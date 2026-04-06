@@ -1,20 +1,10 @@
 const dns = require("dns");
+const net = require("net");
 const { Pool } = require("pg");
 
 const forcedFamily = Number(process.env.PG_FAMILY || 4);
-
-const forcedLookup = (hostname, options, callback) => {
-  dns.lookup(
-    hostname,
-    {
-      family: forcedFamily,
-      all: false,
-      // Keep ordering deterministic when both records exist.
-      verbatim: false,
-    },
-    callback
-  );
-};
+const connectionTimeoutMillis = Number(process.env.PG_CONNECTION_TIMEOUT_MS || 10000);
+const isIpAddress = (value = "") => net.isIP(value) !== 0;
 
 // Some hosts (e.g. cloud runtimes) may resolve IPv6 first even when IPv6 egress is unavailable.
 // Prefer IPv4 to avoid ENETUNREACH against Postgres endpoints that publish both A and AAAA records.
@@ -25,7 +15,7 @@ try {
 }
 
 const buildConnectionString = () => {
-  const rawUrl = process.env.DATABASE_URL;
+  const rawUrl = process.env.DATABASE_URL_IPV4 || process.env.DATABASE_URL;
 
   if (!rawUrl) {
     return rawUrl;
@@ -33,6 +23,11 @@ const buildConnectionString = () => {
 
   try {
     const parsed = new URL(rawUrl);
+
+    const forcedHost = process.env.PGHOST_OVERRIDE || process.env.DB_HOST_OVERRIDE;
+    if (forcedHost) {
+      parsed.hostname = forcedHost;
+    }
 
     const forcedDbName = process.env.DB_NAME || process.env.PGDATABASE;
     if (forcedDbName) {
@@ -55,19 +50,72 @@ const buildConnectionString = () => {
   }
 };
 
-const pool = new Pool({
-  connectionString: buildConnectionString(),
-  connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS || 10000),
-  family: forcedFamily,
-  lookup: forcedLookup,
-  ssl: {
-    rejectUnauthorized: false,
+const createPool = async () => {
+  const connectionString = buildConnectionString();
+
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is not configured");
+  }
+
+  const parsed = new URL(connectionString);
+  let resolvedHost = parsed.hostname;
+  let tlsServerName;
+
+  // Resolve DNS explicitly so we can force IPv4 on hosts where IPv6 egress is unavailable.
+  if (!isIpAddress(parsed.hostname)) {
+    try {
+      const { address } = await dns.promises.lookup(parsed.hostname, {
+        family: forcedFamily,
+        all: false,
+      });
+
+      resolvedHost = address;
+      tlsServerName = parsed.hostname;
+    } catch (err) {
+      console.warn(
+        `DNS lookup fallback to hostname for ${parsed.hostname}: ${err.message}`
+      );
+    }
+  }
+
+  return new Pool({
+    connectionString,
+    host: resolvedHost,
+    connectionTimeoutMillis,
+    ssl: {
+      rejectUnauthorized: false,
+      ...(tlsServerName ? { servername: tlsServerName } : {}),
+    },
+  });
+};
+
+let poolPromise;
+
+const getPool = async () => {
+  if (!poolPromise) {
+    poolPromise = createPool().catch((err) => {
+      poolPromise = null;
+      throw err;
+    });
+  }
+
+  return poolPromise;
+};
+
+const db = {
+  async query(...args) {
+    const pool = await getPool();
+    return pool.query(...args);
   },
-});
+  async end() {
+    const pool = await getPool();
+    return pool.end();
+  },
+};
 
-module.exports = pool;
+module.exports = db;
 
-pool.query(`
+db.query(`
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   google_id VARCHAR(255),
