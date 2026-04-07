@@ -10,11 +10,12 @@ const Dashboard = () => {
   const [filterType, setFilterType] = useState("all");
   const category = "General";
   const titleRef = useRef(null);
+  const safeExpenses = useMemo(() => (Array.isArray(expenses) ? expenses : []), [expenses]);
 
   const fetchExpenses = useCallback(async () => {
     try {
       const data = await getExpenses();
-      setExpenses(data);
+      setExpenses(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch expenses:", error);
       setExpenses([]);
@@ -60,24 +61,23 @@ const Dashboard = () => {
   );
 
   const totalIncome = useMemo(() => {
-    return expenses
+    return safeExpenses
       .filter((item) => item.type === "income")
       .reduce((acc, item) => acc + Number(item.amount), 0);
-  }, [expenses]);
+  }, [safeExpenses]);
 
   const totalExpense = useMemo(() => {
-    return expenses
+    return safeExpenses
       .filter((item) => item.type === "expense")
       .reduce((acc, item) => acc + Number(item.amount), 0);
-  }, [expenses]);
+  }, [safeExpenses]);
 
   const totalBalance = useMemo(() => {
     return totalIncome - totalExpense;
   }, [totalIncome, totalExpense]);
 
-  const filteredExpenses = expenses.filter((item) => {
-    const typeMatch =
-      filterType === "all" || item.type === filterType;
+  const filteredExpenses = safeExpenses.filter((item) => {
+    const typeMatch = filterType === "all" || item.type === filterType;
 
     return typeMatch;
   });
@@ -197,10 +197,10 @@ const Dashboard = () => {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-2xl shadow-slate-950/40 backdrop-blur-xl sm:p-6">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-100">Recent Transactions</h3>
-            <span className="text-xs text-slate-300/80">{expenses.length} items</span>
+            <span className="text-xs text-slate-300/80">{safeExpenses.length} items</span>
           </div>
 
-          {expenses.length === 0 ? (
+          {safeExpenses.length === 0 ? (
             <div className="rounded-xl border border-dashed border-white/15 bg-slate-900/40 px-4 py-10 text-center">
               <p className="text-base font-medium text-slate-200">No transactions yet</p>
               <p className="mt-1 text-sm text-slate-400">Add your first income or expense to get started.</p>

@@ -1,6 +1,8 @@
-const API =
+// This frontend uses Create React App (react-scripts), so use REACT_APP_* env vars.
+const API = (
   process.env.REACT_APP_API_URL ||
-  "https://syntecxhubexpensetracker-production.up.railway.app";
+  "https://syntecxhubexpensetracker-production.up.railway.app"
+).replace(/\/+$/, "");
 
 const request = async (path, { method = "GET", body } = {}) => {
   const headers = {};
@@ -15,17 +17,25 @@ const request = async (path, { method = "GET", body } = {}) => {
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  if (!res.ok) {
-    const message = await res.text();
-    throw new Error(message || `Request failed with status ${res.status}`);
-  }
-
   const contentType = res.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    return res.json();
+  const isJson = contentType.includes("application/json");
+
+  let data;
+  if (isJson) {
+    data = await res.json();
+  } else {
+    data = await res.text();
   }
 
-  return res.text();
+  if (!res.ok) {
+    const message =
+      (typeof data === "object" && data && (data.error || data.message)) ||
+      (typeof data === "string" ? data : "") ||
+      `Request failed with status ${res.status}`;
+    throw new Error(message || "API failed");
+  }
+
+  return data;
 };
 
 export const getExpenses = () => {
