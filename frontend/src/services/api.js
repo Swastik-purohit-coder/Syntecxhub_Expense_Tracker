@@ -1,17 +1,21 @@
 // This frontend uses Create React App (react-scripts), so use REACT_APP_* env vars.
 const API = (
   process.env.REACT_APP_API_URL ||
-  "https://syntecxhubexpensetracker-production.up.railway.app"
+  "https://syntecxhubexpensetracker-production.up.railway.app/api"
 ).replace(/\/+$/, "");
 
-const request = async (path, { method = "GET", body } = {}) => {
+console.log("API:", API);
+
+const API_ROOT = API.endsWith("/api") ? API.slice(0, -4) : API;
+
+const request = async (path, { method = "GET", body, baseUrl = API } = {}) => {
   const headers = {};
 
   if (body) {
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(`${API}${path}`, {
+  const res = await fetch(`${baseUrl}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
@@ -39,22 +43,22 @@ const request = async (path, { method = "GET", body } = {}) => {
 };
 
 export const getExpenses = () => {
-  return request("/api/expenses");
+  return request("/expenses");
 };
 
 export const addExpense = (data) => {
-  return request("/api/expenses/add", {
+  return request("/expenses/add", {
     method: "POST",
     body: data,
   });
 };
 
 export const deleteExpense = (id) => {
-  return request(`/api/expenses/${id}`, {
+  return request(`/expenses/${id}`, {
     method: "DELETE",
   });
 };
 
 export const getUser = () => {
-  return request("/auth/user");
+  return request("/auth/user", { baseUrl: API_ROOT });
 };
