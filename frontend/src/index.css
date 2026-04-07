@@ -1,3 +1,66 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+	--font-display: "Space Grotesk", "Trebuchet MS", sans-serif;
+	--font-body: "Outfit", "Segoe UI", sans-serif;
+}
+
+body {
+	margin: 0;
+	font-family: var(--font-body);
+	background-color: #060b16;
+	color: #e2e8f0;
+}
+
+.auth-display {
+	font-family: var(--font-display);
+	letter-spacing: -0.02em;
+}
+
+.auth-grid-pattern {
+	opacity: 0.2;
+	background-image:
+		linear-gradient(rgba(148, 163, 184, 0.25) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(148, 163, 184, 0.25) 1px, transparent 1px);
+	background-size: 38px 38px;
+}
+
+@keyframes floatY {
+	0%,
+	100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-20px);
+	}
+}
+
+@keyframes floatX {
+	0%,
+	100% {
+		transform: translateX(0px);
+	}
+	50% {
+		transform: translateX(16px);
+	}
+}
+
+.auth-float-y {
+	animation: floatY 10s ease-in-out infinite;
+}
+
+.auth-float-x {
+	animation: floatX 13s ease-in-out infinite;
+}
+
+/* Fallback: hide Clerk "Last used" badges across sign-in strategy buttons. */
+.cl-badge,
+.cl-providerBadge,
+[data-localization-key*="lastUsed"],
+[data-localization-key="badge__default"] {
+	display: none !important;
+}

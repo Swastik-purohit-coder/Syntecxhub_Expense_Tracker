@@ -82,6 +82,10 @@ const Dashboard = () => {
     return typeMatch;
   });
 
+  const handlePageRefresh = useCallback(() => {
+    window.location.reload();
+  }, []);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 px-4 py-6 text-white sm:px-6 lg:px-8">
       <div className="pointer-events-none absolute -top-20 left-8 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
@@ -95,7 +99,7 @@ const Dashboard = () => {
           </div>
 
           <button
-            onClick={fetchExpenses}
+            onClick={handlePageRefresh}
             className="rounded-xl border border-cyan-400/30 bg-cyan-500/15 px-4 py-2 text-sm font-medium text-cyan-200 shadow-lg shadow-cyan-900/20 transition duration-200 hover:-translate-y-0.5 hover:bg-cyan-500/30 hover:text-cyan-100 active:scale-[0.98]"
           >
             Refresh
