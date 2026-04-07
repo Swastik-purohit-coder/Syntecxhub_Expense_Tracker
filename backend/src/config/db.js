@@ -5,6 +5,7 @@ const { Pool } = require("pg");
 const forcedFamily = Number(process.env.PG_FAMILY || 4);
 const connectionTimeoutMillis = Number(process.env.PG_CONNECTION_TIMEOUT_MS || 10000);
 const isIpAddress = (value = "") => net.isIP(value) !== 0;
+const uniqueValues = (values = []) => [...new Set(values.filter(Boolean))];
 
 // Some hosts (e.g. cloud runtimes) may resolve IPv6 first even when IPv6 egress is unavailable.
 // Prefer IPv4 to avoid ENETUNREACH against Postgres endpoints that publish both A and AAAA records.
@@ -50,6 +51,40 @@ const buildConnectionString = () => {
   }
 };
 
+const resolveHostCandidates = async (hostname) => {
+  if (!hostname || isIpAddress(hostname)) {
+    return [hostname];
+  }
+
+  const candidates = [];
+
+  try {
+    const { address } = await dns.promises.lookup(hostname, {
+      family: forcedFamily,
+      all: false,
+    });
+
+    candidates.push(address);
+  } catch (err) {
+    console.warn(`DNS lookup failed for ${hostname}: ${err.message}`);
+  }
+
+  try {
+    const addresses = await dns.promises.resolve4(hostname);
+    candidates.push(...addresses);
+  } catch (err) {
+    console.warn(`DNS resolve4 failed for ${hostname}: ${err.message}`);
+  }
+
+  const resolved = uniqueValues(candidates);
+  if (resolved.length > 0) {
+    return resolved;
+  }
+
+  console.warn(`Falling back to unresolved hostname: ${hostname}`);
+  return [hostname];
+};
+
 const createPool = async () => {
   const connectionString = buildConnectionString();
 
@@ -58,35 +93,44 @@ const createPool = async () => {
   }
 
   const parsed = new URL(connectionString);
-  let resolvedHost = parsed.hostname;
-  let tlsServerName;
+  const tlsServerName = isIpAddress(parsed.hostname) ? undefined : parsed.hostname;
+  const hostCandidates = await resolveHostCandidates(parsed.hostname);
+  let lastError;
 
-  // Resolve DNS explicitly so we can force IPv4 on hosts where IPv6 egress is unavailable.
-  if (!isIpAddress(parsed.hostname)) {
+  for (const hostCandidate of hostCandidates) {
+    const pool = new Pool({
+      connectionString,
+      host: hostCandidate,
+      connectionTimeoutMillis,
+      ssl: {
+        rejectUnauthorized: false,
+        ...(tlsServerName ? { servername: tlsServerName } : {}),
+      },
+    });
+
     try {
-      const { address } = await dns.promises.lookup(parsed.hostname, {
-        family: forcedFamily,
-        all: false,
-      });
+      await pool.query("SELECT 1");
 
-      resolvedHost = address;
-      tlsServerName = parsed.hostname;
+      if (hostCandidate !== parsed.hostname) {
+        console.log(`Database connected using host ${hostCandidate}`);
+      }
+
+      return pool;
     } catch (err) {
+      lastError = err;
       console.warn(
-        `DNS lookup fallback to hostname for ${parsed.hostname}: ${err.message}`
+        `Database connection failed for host ${hostCandidate}: ${err.code || err.message}`
       );
+
+      try {
+        await pool.end();
+      } catch (endErr) {
+        console.warn(`Pool cleanup failed for host ${hostCandidate}: ${endErr.message}`);
+      }
     }
   }
 
-  return new Pool({
-    connectionString,
-    host: resolvedHost,
-    connectionTimeoutMillis,
-    ssl: {
-      rejectUnauthorized: false,
-      ...(tlsServerName ? { servername: tlsServerName } : {}),
-    },
-  });
+  throw lastError || new Error("Unable to establish database connection");
 };
 
 let poolPromise;
