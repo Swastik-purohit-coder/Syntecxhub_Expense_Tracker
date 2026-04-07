@@ -7,6 +7,8 @@ const connectionTimeoutMillis = Number(process.env.PG_CONNECTION_TIMEOUT_MS || 1
 const isIpAddress = (value = "") => net.isIP(value) !== 0;
 const uniqueValues = (values = []) => [...new Set(values.filter(Boolean))];
 
+console.log("DB URL:", process.env.DATABASE_URL);
+
 // Some hosts (e.g. cloud runtimes) may resolve IPv6 first even when IPv6 egress is unavailable.
 // Prefer IPv4 to avoid ENETUNREACH against Postgres endpoints that publish both A and AAAA records.
 try {
