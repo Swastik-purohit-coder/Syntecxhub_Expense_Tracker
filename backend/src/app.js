@@ -11,14 +11,7 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
-  })
-);
-app.options("*", cors());
+app.use(cors());
 app.use(express.json());
 
 app.use("/auth", authRoutes);
