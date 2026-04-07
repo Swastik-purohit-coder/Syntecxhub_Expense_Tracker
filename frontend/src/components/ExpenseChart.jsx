@@ -10,17 +10,17 @@ const ExpenseChart = ({ income, expense }) => {
   ];
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/45 p-4 backdrop-blur-xl">
+    <div className="rounded-2xl border border-white/10 bg-slate-900/45 p-3 backdrop-blur-xl sm:p-4">
       <h2 className="mb-4 text-sm font-medium tracking-wide text-slate-300">Overview</h2>
 
-      <div className="h-[260px] w-full">
+      <div className="h-[220px] w-full sm:h-[260px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              outerRadius={88}
+              outerRadius="70%"
               dataKey="value"
               stroke="none"
             >
@@ -41,7 +41,7 @@ const ExpenseChart = ({ income, expense }) => {
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-3 flex items-center gap-4 text-xs text-slate-300/90">
+      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-300/90">
         <span className="inline-flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
           Income

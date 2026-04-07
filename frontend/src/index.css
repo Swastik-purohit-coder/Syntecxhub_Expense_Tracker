@@ -16,6 +16,13 @@ body {
 	color: #e2e8f0;
 }
 
+html,
+body,
+#root {
+	max-width: 100%;
+	overflow-x: hidden;
+}
+
 .auth-display {
 	font-family: var(--font-display);
 	letter-spacing: -0.02em;

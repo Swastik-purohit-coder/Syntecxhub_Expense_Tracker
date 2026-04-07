@@ -18,7 +18,9 @@ const signInAppearance = {
     borderRadius: "0.85rem",
   },
   elements: {
-    card: "bg-transparent shadow-none border-0",
+    rootBox: "w-full",
+    cardBox: "w-full",
+    card: "w-full bg-transparent shadow-none border-0",
     headerTitle: "text-slate-100",
     headerSubtitle: "text-slate-400",
     badge: "hidden",
@@ -48,14 +50,14 @@ function App() {
           <div className="auth-float-x pointer-events-none absolute -right-20 top-24 h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl" />
           <div className="auth-float-y pointer-events-none absolute bottom-0 right-24 h-72 w-72 rounded-full bg-orange-300/15 blur-3xl" />
 
-          <div className="relative mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-8 sm:px-6 lg:px-8">
-            <div className="grid w-full gap-6 rounded-3xl border border-white/10 bg-slate-950/45 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl sm:p-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8 lg:p-8">
-              <section className="rounded-2xl border border-white/10 bg-gradient-to-b from-cyan-500/10 via-slate-900/65 to-slate-900/90 p-6 sm:p-8">
+          <div className="relative mx-auto flex min-h-screen w-full max-w-6xl items-start px-3 py-5 sm:px-6 sm:py-8 lg:items-center lg:px-8">
+            <div className="grid w-full gap-4 rounded-3xl border border-white/10 bg-slate-950/45 p-3 shadow-2xl shadow-black/50 backdrop-blur-xl sm:gap-6 sm:p-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8 lg:p-8">
+              <section className="order-2 rounded-2xl border border-white/10 bg-gradient-to-b from-cyan-500/10 via-slate-900/65 to-slate-900/90 p-5 sm:p-8 lg:order-1">
                 <p className="inline-flex rounded-full border border-cyan-300/40 bg-cyan-400/15 px-3 py-1 text-xs font-medium tracking-wide text-cyan-100">
                   Expense Tracker
                 </p>
 
-                <h1 className="auth-display mt-5 text-3xl font-semibold leading-tight text-white sm:text-4xl lg:text-5xl">
+                <h1 className="auth-display mt-4 text-2xl font-semibold leading-tight text-white sm:text-4xl lg:text-5xl">
                   Track money without
                   <br />
                   the usual chaos.
@@ -66,7 +68,7 @@ function App() {
                   snapshot of your monthly cash flow.
                 </p>
 
-                <div className="mt-8 grid grid-cols-2 gap-3 sm:max-w-md">
+                <div className="mt-6 grid grid-cols-1 gap-3 sm:max-w-md sm:grid-cols-2">
                   <div className="rounded-xl border border-white/10 bg-white/5 p-3">
                     <p className="text-lg font-semibold text-cyan-200">Fast Entry</p>
                     <p className="mt-1 text-xs text-slate-300">Add transactions in seconds</p>
@@ -78,7 +80,7 @@ function App() {
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-white/10 bg-slate-900/60 p-2 shadow-xl shadow-cyan-950/20 sm:p-3">
+              <section className="order-1 mx-auto w-full max-w-md rounded-2xl border border-white/10 bg-slate-900/60 p-2 shadow-xl shadow-cyan-950/20 sm:p-3 lg:order-2 lg:max-w-none">
                 <div className="rounded-xl bg-slate-950/70 p-1 sm:p-2">
                   <SignIn appearance={signInAppearance} />
                 </div>
@@ -90,7 +92,7 @@ function App() {
 
       <SignedIn>
         <div className="relative">
-          <div className="fixed right-4 top-4 z-50 rounded-full border border-white/20 bg-slate-900/80 p-1.5 shadow-lg shadow-black/30 backdrop-blur">
+          <div className="fixed bottom-3 right-3 top-auto z-50 rounded-full border border-white/20 bg-slate-900/80 p-1.5 shadow-lg shadow-black/30 backdrop-blur sm:bottom-auto sm:right-4 sm:top-4">
             <UserButton afterSignOutUrl="/" />
           </div>
           <Dashboard />

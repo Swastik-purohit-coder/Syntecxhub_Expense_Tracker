@@ -87,20 +87,20 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 px-4 py-6 text-white sm:px-6 lg:px-8">
+    <div className="relative min-h-screen overflow-hidden bg-slate-950 px-3 pb-6 pt-6 text-white sm:px-6 sm:pt-14 lg:px-8">
       <div className="pointer-events-none absolute -top-20 left-8 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 right-6 h-72 w-72 rounded-full bg-fuchsia-400/10 blur-3xl" />
 
       <div className="relative mx-auto max-w-6xl">
-        <div className="mb-7 flex items-start justify-between gap-4">
+        <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium tracking-wide text-slate-300/80">Financial overview</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-100 sm:text-4xl">Expense Tracker Dashboard</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-100 sm:text-4xl">Expense Tracker Dashboard</h1>
           </div>
 
           <button
             onClick={handlePageRefresh}
-            className="rounded-xl border border-cyan-400/30 bg-cyan-500/15 px-4 py-2 text-sm font-medium text-cyan-200 shadow-lg shadow-cyan-900/20 transition duration-200 hover:-translate-y-0.5 hover:bg-cyan-500/30 hover:text-cyan-100 active:scale-[0.98]"
+            className="w-full rounded-xl border border-cyan-400/30 bg-cyan-500/15 px-4 py-2 text-sm font-medium text-cyan-200 shadow-lg shadow-cyan-900/20 transition duration-200 hover:-translate-y-0.5 hover:bg-cyan-500/30 hover:text-cyan-100 active:scale-[0.98] sm:w-auto"
           >
             Refresh
           </button>
@@ -115,7 +115,7 @@ const Dashboard = () => {
               </svg>
               <h2 className="text-sm font-medium">Total Balance</h2>
             </div>
-            <p className="text-3xl font-semibold text-indigo-100">₹ {totalBalance}</p>
+            <p className="text-2xl font-semibold text-indigo-100 sm:text-3xl">₹ {totalBalance}</p>
           </div>
 
           <div className="group rounded-2xl border border-emerald-300/20 bg-gradient-to-br from-emerald-400/15 via-slate-900/70 to-slate-900/60 p-5 shadow-xl shadow-emerald-500/10 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:shadow-emerald-500/20 md:mt-3">
@@ -125,7 +125,7 @@ const Dashboard = () => {
               </svg>
               <h2 className="text-sm font-medium">Income</h2>
             </div>
-            <p className="text-3xl font-semibold text-emerald-300">₹ {totalIncome}</p>
+            <p className="text-2xl font-semibold text-emerald-300 sm:text-3xl">₹ {totalIncome}</p>
           </div>
 
           <div className="group rounded-2xl border border-rose-300/20 bg-gradient-to-br from-rose-400/15 via-slate-900/70 to-slate-900/60 p-5 shadow-xl shadow-rose-500/10 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:shadow-rose-500/20">
@@ -135,12 +135,12 @@ const Dashboard = () => {
               </svg>
               <h2 className="text-sm font-medium">Expense</h2>
             </div>
-            <p className="text-3xl font-semibold text-rose-300">₹ {totalExpense}</p>
+            <p className="text-2xl font-semibold text-rose-300 sm:text-3xl">₹ {totalExpense}</p>
           </div>
         </div>
 
         <div className="mb-7 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-2xl shadow-slate-950/40 backdrop-blur-xl sm:p-6">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-lg font-semibold text-slate-100">Cashflow Snapshot</h3>
             <span className="text-xs text-slate-300/80">Income vs Expense</span>
           </div>
@@ -199,7 +199,7 @@ const Dashboard = () => {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-2xl shadow-slate-950/40 backdrop-blur-xl sm:p-6">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-lg font-semibold text-slate-100">Recent Transactions</h3>
             <span className="text-xs text-slate-300/80">{safeExpenses.length} items</span>
           </div>
@@ -215,18 +215,18 @@ const Dashboard = () => {
                 {filteredExpenses.map((exp) => (
                   <div
                     key={exp.id}
-                    className="group flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 transition duration-200 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:bg-slate-900/80"
+                    className="group flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 transition duration-200 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:bg-slate-900/80 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
                       <span
                         className={`h-2.5 w-2.5 rounded-full ${
                           exp.type === "income" ? "bg-emerald-400" : "bg-rose-400"
                         }`}
                       />
-                      <span className="font-medium text-slate-100">{exp.title}</span>
+                      <span className="truncate font-medium text-slate-100">{exp.title}</span>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
                       <span className={exp.type === "income" ? "font-semibold text-green-400" : "font-semibold text-red-400"}>
                         ₹ {exp.amount}
                       </span>
